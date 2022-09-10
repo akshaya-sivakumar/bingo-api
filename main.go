@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,7 +16,6 @@ func main() {
 
 	router.GET("/ws/:roomId", func(c *gin.Context) {
 		roomId := c.Param("roomId")
-		fmt.Println(roomId)
 		serveWs(c.Writer, c.Request, roomId)
 	})
 

@@ -21,6 +21,8 @@ type hub struct {
 	// Inbound messages from the connections.
 	broadcast chan message
 
+	clients map[subscription]bool
+
 	// Register requests from the connections.
 	register chan subscription
 
@@ -33,6 +35,7 @@ var h = hub{
 	register:   make(chan subscription),
 	unregister: make(chan subscription),
 	rooms:      make(map[string]map[*connection]bool),
+	clients:    make(map[subscription]bool),
 }
 
 func (h *hub) run() {
@@ -40,19 +43,21 @@ func (h *hub) run() {
 		select {
 
 		case s := <-h.register:
-			fmt.Println(h.rooms)
-			/* 	if len(h.rooms.subscription.clients) < 2 {
-				h.clients[client] = true
-			} else {
-				close(client.send)
-			} */
 
 			connections := h.rooms[s.room]
-			if connections == nil {
-				connections = make(map[*connection]bool)
-				h.rooms[s.room] = connections
+			fmt.Println(len(connections))
+			if len(connections) <= 1 {
+
+				if connections == nil {
+					connections = make(map[*connection]bool)
+					h.rooms[s.room] = connections
+				}
+				h.rooms[s.room][s.conn] = true
+			} else {
+				delete(connections, s.conn)
+				close(s.conn.send)
 			}
-			h.rooms[s.room][s.conn] = true
+
 		case s := <-h.unregister:
 			connections := h.rooms[s.room]
 			if connections != nil {
