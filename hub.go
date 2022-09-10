@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type message struct {
 	data []byte
@@ -8,8 +10,9 @@ type message struct {
 }
 
 type subscription struct {
-	conn *connection
-	room string
+	conn           *connection
+	room           string
+	connectionType string
 }
 
 // hub maintains the set of active connections and broadcasts messages to the
@@ -43,14 +46,18 @@ func (h *hub) run() {
 		select {
 
 		case s := <-h.register:
-
 			connections := h.rooms[s.room]
-			fmt.Println(len(connections))
+			fmt.Println(s.connectionType)
 			if len(connections) <= 1 {
-
 				if connections == nil {
-					connections = make(map[*connection]bool)
-					h.rooms[s.room] = connections
+					if s.connectionType == "host" {
+						connections = make(map[*connection]bool)
+						h.rooms[s.room] = connections
+					} else {
+						delete(connections, s.conn)
+						close(s.conn.send)
+						break
+					}
 				}
 				h.rooms[s.room][s.conn] = true
 			} else {

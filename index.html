@@ -31,6 +31,7 @@
             if (window["WebSocket"]) {
                 const params = window.location.href.split("/");
                 const roomId = params[params.length - 1];
+
                 conn = new WebSocket("ws://" + document.location.host + "/ws/" + roomId);
                 conn.onclose = function (evt) {
                     let item = document.createElement("div");

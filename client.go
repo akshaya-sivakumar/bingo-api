@@ -38,6 +38,7 @@ type connection struct {
 
 // readPump pumps messages from the websocket connection to the hub.
 func (s subscription) readPump() {
+
 	c := s.conn
 	defer func() {
 		h.unregister <- s
@@ -61,12 +62,14 @@ func (s subscription) readPump() {
 
 // write writes a message with the given message type and payload.
 func (c *connection) write(mt int, payload []byte) error {
+
 	c.ws.SetWriteDeadline(time.Now().Add(writeWait))
 	return c.ws.WriteMessage(mt, payload)
 }
 
 // writePump pumps messages from the hub to the websocket connection.
 func (s *subscription) writePump() {
+
 	c := s.conn
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
@@ -92,15 +95,14 @@ func (s *subscription) writePump() {
 }
 
 // serveWs handles websocket requests from the peer.
-func serveWs(w http.ResponseWriter, r *http.Request, roomId string) {
-
+func serveWs(w http.ResponseWriter, r *http.Request, roomId string, connectionType string) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err.Error())
 		return
 	}
 	c := &connection{send: make(chan []byte, 256), ws: ws}
-	s := subscription{c, roomId}
+	s := subscription{c, roomId,connectionType}
 	h.register <- s
 	go s.writePump()
 	go s.readPump()

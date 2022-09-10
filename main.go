@@ -1,6 +1,7 @@
 package main
 
 import (
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,9 +15,10 @@ func main() {
 		c.HTML(200, "index.html", nil)
 	})
 
-	router.GET("/ws/:roomId", func(c *gin.Context) {
+	router.GET("/ws/:roomId/:connectionType", func(c *gin.Context) {
 		roomId := c.Param("roomId")
-		serveWs(c.Writer, c.Request, roomId)
+		connectionType := c.Param("connectionType")
+		serveWs(c.Writer, c.Request, roomId,connectionType)
 	})
 
 	router.Run("0.0.0.0:8080")
