@@ -95,14 +95,14 @@ func (s *subscription) writePump() {
 }
 
 // serveWs handles websocket requests from the peer.
-func serveWs(w http.ResponseWriter, r *http.Request, roomId string, connectionType string) {
+func serveWs(w http.ResponseWriter, r *http.Request, roomId string, connectionType string, connectionLimit int64) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err.Error())
 		return
 	}
 	c := &connection{send: make(chan []byte, 256), ws: ws}
-	s := subscription{c, roomId,connectionType}
+	s := subscription{c, roomId, connectionType, connectionLimit}
 	h.register <- s
 	go s.writePump()
 	go s.readPump()

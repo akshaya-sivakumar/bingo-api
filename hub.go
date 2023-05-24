@@ -10,9 +10,10 @@ type message struct {
 }
 
 type subscription struct {
-	conn           *connection
-	room           string
-	connectionType string
+	conn            *connection
+	room            string
+	connectionType  string
+	connectionLimit int64
 }
 
 // hub maintains the set of active connections and broadcasts messages to the
@@ -48,7 +49,7 @@ func (h *hub) run() {
 		case s := <-h.register:
 			connections := h.rooms[s.room]
 			fmt.Println(s.connectionType)
-			if len(connections) <= 1 {
+			if len(connections) <= int(s.connectionLimit)-1 {
 				if connections == nil {
 					if s.connectionType == "host" {
 						connections = make(map[*connection]bool)
